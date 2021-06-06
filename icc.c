@@ -7,36 +7,46 @@
 
 //Token kind
 typedef enum{
-    TK_RESERVED,//symbol
-    TK_NUM,     //int Token
-    TK_EOF,     //Token representing the end of the input
+    TK_RESERVED,//Keywords or punctuators
+    TK_NUM,     //integer literals
+    TK_EOF,     //End-of-file markers
 }TokenKind;
 
 typedef struct Token Token;
 
 //token type
 struct Token{
-    TokenKind kind; //token type
-    Token *next;    //next input token
-    int val;        //if kind is TK_NUM, its number
-    char *str;       //token string
+    TokenKind kind; //Token kind
+    Token *next;    //next token
+    int val;        //if kind is TK_NUM, its value
+    char *str;       //Token string
 };
 
-//Tokens we are currently focusing on
+
+//Input program
+char *user_input;
+
+//Current token
 Token *token;
 
-//function for reporting errors
-//it takes the same arguments as printf
-void error(char *fmt, ...){
+
+
+//report an error location and exit.
+void error_at(char *loc, char *fmt, ...){
     va_list ap;
-    va_start(ap, fmt);
+    va_start(ap,fmt);
+
+    int pos=loc-user_input;
+    fprintf(stderr,"%s\n",user_input);
+    fprintf(stderr, "%*s",pos," ");//print pos whitespaces
+    fprintf(stderr,"^ ");
     vfprintf(stderr,fmt,ap);
     fprintf(stderr,"\n");
     exit(1);
+
 }
 
-//when the next token is the expected symbol, read the token one more time
-//and return true. Otherwise, return false.
+//consumes the current token if it matches 'op'
 bool consume(char op){
     if(token->kind != TK_RESERVED || token->str[0] != op)
         return false;
@@ -44,19 +54,17 @@ bool consume(char op){
     return true;
 }
 
-//when the next token is the expected symbol, read the token one more time.
-// Otherwise, report an error.
+//Ensure that the current token is 'op'
 void expect(char op){
     if(token->kind!=TK_RESERVED||token->str[0]!=op)
-        error("not '%c'",op);
+        error_at(token->str,"not '%c'",op);
     token=token->next;
 }
 
-// If the next token is a integer, read the token one more time and return the number.
-// Otherwise, report an error.
+//Ensure that the current token is TK_NUM.
 int expect_number(){
     if(token->kind!=TK_NUM)
-        error("not integer");
+        error_at(token->str,"not integer");
     int val=token->val;
     token=token->next;
     return val;
@@ -75,7 +83,7 @@ Token *new_token(TokenKind kind,Token *cur,char *str){
     return tok;
 }
 
-//Tokenize the input string p and return it.
+//Tokenize 'p' and returns new tokens.
 Token *tokenize(char *p){
     Token head;
     head.next=NULL;
@@ -97,7 +105,7 @@ Token *tokenize(char *p){
             continue;
         }
 
-        error("can't tokenize");
+        error_at(p,"can't tokenize");
     }
 
     new_token(TK_EOF,cur,p);
@@ -106,20 +114,20 @@ Token *tokenize(char *p){
 
 int main(int argc, char **argv){
     if(argc!=2){
-        error("The number of arguments is incorrect");
+        error_at(token->str,"The number of arguments is incorrect");
         return 1;
     }
+
+user_input=argv[1];
 
 //tokenize
 token=tokenize(argv[1]);
 
-//output the first half of the assembly
 printf(".intel_syntax noprefix\n");
 printf(".globl main\n");
 printf("main:\n");
 
-//The first part of the expression must be a integer,
-//so check for that and output the first mov instruction
+//The first part of the expression must be a integer.
 printf("   mov rax, %d\n",expect_number());
 
 //while consuming the sequence of tokens '+<number>' or
