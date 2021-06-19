@@ -8,6 +8,14 @@ bool consume(char *op){
     token=token->next;
     return true;
 }
+Token *consume_ident(){
+    if(token->kind==TK_IDENT){
+        Token *tok2=token;
+        token=token->next;
+        return tok2;
+    }
+    return 0;
+}
 
 //Ensure that the current token is 'op'
 void expect(char *op){
@@ -46,7 +54,7 @@ bool startswith(char *p, char *q){
 }
 //Tokenize 'p' and returns new tokens.
 Token *tokenize(char *p){
-     Token head;
+    Token head;
     head.next=NULL;
     Token *cur = &head;
     while(*p){
@@ -71,6 +79,18 @@ Token *tokenize(char *p){
             char *q=p;
             cur->val=strtol(p,&p,10);
             cur->len=p-q;
+            continue;
+        }
+        if('a'<=*p && *p<='z'){
+            cur = new_token(TK_IDENT, cur, p++,1);
+            continue;
+        }
+        if(strchr(";",*p)){
+            cur=new_token(TK_RESERVED,cur,p++,1);
+            continue;
+        }
+        if(strchr("=",*p)){
+            cur=new_token(TK_RESERVED,cur,p++,1);
             continue;
         }
 
