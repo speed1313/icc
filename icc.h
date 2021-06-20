@@ -8,6 +8,7 @@
 typedef enum{
     TK_RESERVED,//Keywords or punctuators
     TK_IDENT,   //identifer
+    TK_RETURN,
     TK_NUM,     //integer literals
     TK_EOF,     //End-of-file markers
 }TokenKind;
@@ -31,7 +32,8 @@ typedef enum{// 演算子
     ND_LT,      //<
     ND_LE,      //<=
     ND_NUM,     // integer
-    ND_ASSIGN  // =
+    ND_ASSIGN,  // =
+    ND_RETURN   //return 
 }NodeKind;
 
 typedef struct LVar LVar;

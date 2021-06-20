@@ -33,10 +33,20 @@ Node *program(){
     }
     code[i]=NULL;
 }
-Node *stmt(){
-    Node *node=expr();
-    expect(";");
-    return node;
+Node *stmt() {
+  Node *node;
+  if (token->kind==TK_RETURN) {
+    token=token->next;
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+  if (!consume(";")){
+    error_at(token->str, "';'ではないトークンです");
+  }
+  return node;
 }
 Node *expr(){
     return assign();
@@ -166,6 +176,13 @@ void gen(Node *node){
             printf("    pop rax\n");
             printf("    mov [rax], rdi\n");
             printf("    push rdi\n");
+            return;
+        case ND_RETURN:
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    mov rsp, rbp\n");
+            printf("    pop rbp\n");
+            printf("    ret\n");
             return;
         }
 
