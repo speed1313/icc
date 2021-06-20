@@ -16,7 +16,6 @@ Token *consume_ident(){
     }
     return 0;
 }
-
 //Ensure that the current token is 'op'
 void expect(char *op){
     if(token->kind!=TK_RESERVED||
@@ -25,7 +24,6 @@ void expect(char *op){
         error_at(token->str,"expected '%c'",op);
     token=token->next;
 }
-
 //Ensure that the current token is TK_NUM.
 int expect_number(){
     if(token->kind!=TK_NUM)
@@ -38,7 +36,16 @@ int expect_number(){
 bool at_eof(){
     return token->kind==TK_EOF;
 }
-
+// 変数を名前で検索する。見つからなかった場合はNULLを返す。
+LVar *find_lvar(Token *tok) {
+    LVar *var=locals;
+  for (var ; var; var = var->next){
+    if (var->len == tok->len && strncmp(tok->str, var->name, var->len)==0){
+      return var;
+  }
+  }
+  return NULL;
+}
 //create a new token and connect it to cur
 Token *new_token(TokenKind kind,Token *cur,char *str, int len){
     Token *tok=calloc(1,sizeof(Token));
@@ -63,8 +70,8 @@ Token *tokenize(char *p){
             p++;
             continue;
         }
-        if(startswith(p,"==")||startswith(p,"|=")||
-            startswith(p,"<==")||startswith(p,">=")){
+        if(startswith(p,"==")||startswith(p,"!=")||
+            startswith(p,"<=")||startswith(p,">=")){
                 cur=new_token(TK_RESERVED,cur,p,2);
                 p+=2;
                 continue;
@@ -77,12 +84,18 @@ Token *tokenize(char *p){
         if(isdigit(*p)){
             cur=new_token(TK_NUM,cur,p,0);
             char *q=p;
-            cur->val=strtol(p,&p,10);
-            cur->len=p-q;
+            cur->val = strtol(p,&p,10);
+            cur->len = p-q;
             continue;
         }
         if('a'<=*p && *p<='z'){
-            cur = new_token(TK_IDENT, cur, p++,1);
+            int i=0;
+            char *q=p;
+            while('a' <= *p && *p <= 'z'&&i<30){
+                i++;
+                p++;
+            }
+            cur = new_token(TK_IDENT, cur, q, i);
             continue;
         }
         if(strchr(";",*p)){

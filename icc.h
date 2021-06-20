@@ -33,10 +33,19 @@ typedef enum{// 演算子
     ND_NUM,     // integer
     ND_ASSIGN  // =
 }NodeKind;
+
+typedef struct LVar LVar;
+//ローカル変数の型;
+struct LVar{
+    LVar *next; //　next LVar or NULL
+    char name[128]; //name
+    int len;    //length of name
+    int offset; //offset from RBP
+};
+
+extern LVar *locals;    // local variable
 extern char *user_input;
 extern Token *token;
-
-
 
 struct Node{
     NodeKind kind;
@@ -56,6 +65,7 @@ void gen_lval(Node *node);
 void gen(Node *node);
 Token *tokenize(char *p);
 Node *expr();
+Node *program();
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
-Node *program();
+LVar *find_lvar(Token *tok);

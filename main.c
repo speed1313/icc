@@ -2,6 +2,7 @@
 char *user_input;
 Token *token;
 Node *code[100];
+LVar *locals;
 
 // Reports an error and exit.
 void error(char *fmt, ...) {
@@ -27,6 +28,13 @@ void error_at(char *loc, char *fmt, ...){
 
 }
 int main(int argc, char **argv){
+    locals=calloc(1,sizeof(LVar));
+    locals->next=NULL;
+    locals->len=0;
+    locals->offset=0;
+
+
+
     if(argc!=2){
         error_at(token->str,"The number of arguments is incorrect");
         return 1;
