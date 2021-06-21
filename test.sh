@@ -38,5 +38,6 @@ assert 2 'hoge=1;fuga=2;return fuga;return fuga-hoge;'
 assert 6 'foo = 1;bar = 2 + 3;foo + bar;'
 assert 12 'a=1;b=5*6-8;a+b/2;'
 assert 5 'Hoge_2=2; fuga_h=3; Hoge_2+fuga_h;'
+assert 5 'Hoge=9; fuga=2; Hoge/3+fuga;'
 
 echo OK!
